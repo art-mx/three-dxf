@@ -143,10 +143,12 @@ export function Viewer(data, parent, width, height, font) {
         }
     };
 
-    var camera = new THREE.OrthographicCamera(viewPort.left, viewPort.right, viewPort.top, viewPort.bottom, 1, 19);
+    var camera = new THREE.OrthographicCamera(viewPort.left, viewPort.right, viewPort.top, viewPort.bottom, .5, 19);
     camera.position.z = 10;
     camera.position.x = viewPort.center.x;
     camera.position.y = viewPort.center.y;
+    camera.zoom = 0.9;
+    this.camera = camera;
 
     var renderer = this.renderer = new THREE.WebGLRenderer();
     renderer.setSize(width, height);
@@ -161,14 +163,15 @@ export function Viewer(data, parent, width, height, font) {
     controls.target.y = camera.position.y;
     controls.target.z = 0;
     controls.zoomSpeed = 3;
-
     //Uncomment this to disable rotation (does not make much sense with 2D drawings).
     //controls.enableRotate = false;
 
-    this.render = function() { renderer.render(scene, camera) };
+    this.render = function() { console.log("rendering..."); renderer.render(scene, camera) };
     controls.addEventListener('change', this.render);
     this.render();
     controls.update();
+
+    this.update = function() { console.log("rendering..."); renderer.render(scene, camera); controls.update();};
 
     this.resize = function(width, height) {
         var originalWidth = renderer.domElement.width;
