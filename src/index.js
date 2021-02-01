@@ -236,7 +236,7 @@ export function Viewer(data, parent, width, height, font, context) {
     }
 
     function getCurveLength(curve) {
-        var length = curve.getLength()
+        var length = curve.getLengths(100).reduce((a, b) => a + b, 0);
         console.log(`entity ${entity.type} length = ${length}`)
         return length;
     }
