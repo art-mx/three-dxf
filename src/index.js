@@ -82,10 +82,10 @@ THREEx.BulgeGeometry.prototype = Object.create( THREE.Geometry.prototype );
  * @param {Object} context - an object to store the results of measurements
  * @constructor
  */
-export function Viewer(data, parent, width, height, font, context) {
+export function Viewer(data, parent, width, height, font) {
 
     createLineTypeShaders(data);
-
+    this.context = {"width": 0, "height":0 , "sum_lengths": 0};
     var scene = new THREE.Scene();
 
     // Create scene from dxf object (data)
