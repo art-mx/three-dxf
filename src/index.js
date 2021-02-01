@@ -85,7 +85,6 @@ THREEx.BulgeGeometry.prototype = Object.create( THREE.Geometry.prototype );
 export function Viewer(data, parent, width, height, font, context) {
 
     createLineTypeShaders(data);
-
     var scene = new THREE.Scene();
 
     // Create scene from dxf object (data)
@@ -201,17 +200,13 @@ export function Viewer(data, parent, width, height, font, context) {
         this.render();
     };
 
-    function objCurveLength(obj) {
-
-    }
-
     function drawEntity(entity, data, context) {
         var mesh;
         if(entity.type === 'CIRCLE' || entity.type === 'ARC') {
             mesh = drawArc(entity, data, context);
         } else if(entity.type === 'LWPOLYLINE' || entity.type === 'LINE' || entity.type === 'POLYLINE') {
             mesh = drawLine(entity, data);
-            context.sum_lengths += get_polyline_length(entity)
+            context.sum_lengths += get_polyline_length(entity);
         } else if(entity.type === 'TEXT') {
             mesh = drawText(entity, data);
         } else if(entity.type === 'SOLID') {
@@ -249,13 +244,14 @@ export function Viewer(data, parent, width, height, font, context) {
     function distance_between_points(x1, y1, x2, y2) {
         return Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2));
     }
+
     function get_polyline_length(entity) {
         var sum_lengths = 0;
-        vert = entity.vertices
-        point_num = vert.length
+        vert = entity.vertices;
+        point_num = vert.length;
         for (i = 0; i < point_num - 1; i++) {
-            v1 = vert[i]
-            v2 = vert[i + 1]
+            v1 = vert[i];
+            v2 = vert[i + 1];
             sum_lengths += distance_between_points(v1.x, v1.y, v2.x, v2.y);
 
         }
