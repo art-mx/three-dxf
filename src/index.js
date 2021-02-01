@@ -206,7 +206,7 @@ export function Viewer(data, parent, width, height, font, context) {
             mesh = drawArc(entity, data, context);
         } else if(entity.type === 'LWPOLYLINE' || entity.type === 'LINE' || entity.type === 'POLYLINE') {
             mesh = drawLine(entity, data);
-            //context.sum_lengths += get_polyline_length(entity);
+            context.sum_lengths += get_polyline_length(entity);
         } else if(entity.type === 'TEXT') {
             mesh = drawText(entity, data);
         } else if(entity.type === 'SOLID') {
@@ -273,7 +273,7 @@ export function Viewer(data, parent, width, height, font, context) {
             false, // Always counterclockwise
             rotation
         );
-        //context.sum_lengths += getCurveLength(curve);
+        context.sum_lengths += getCurveLength(curve);
         var points = curve.getPoints( 50 );
         var geometry = new THREE.BufferGeometry().setFromPoints( points );
         var material = new THREE.LineBasicMaterial( {  linewidth: 1, color : color } );
@@ -393,7 +393,7 @@ export function Viewer(data, parent, width, height, font, context) {
             curve = new THREE.SplineCurve(points);
             interpolatedPoints = curve.getPoints( 100 );
         }
-        //context.sum_lengths += getCurveLength(curve);
+        context.sum_lengths += getCurveLength(curve);
         var geometry = new THREE.BufferGeometry().setFromPoints( interpolatedPoints );
         var material = new THREE.LineBasicMaterial( { linewidth: 1, color : color } );
         var splineObject = new THREE.Line( geometry, material );
