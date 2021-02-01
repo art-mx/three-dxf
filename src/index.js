@@ -82,10 +82,10 @@ THREEx.BulgeGeometry.prototype = Object.create( THREE.Geometry.prototype );
  * @param {Object} context - an object to store the results of measurements
  * @constructor
  */
-export function Viewer(data, parent, width, height, font) {
+export function Viewer(data, parent, width, height, font, context) {
 
     createLineTypeShaders(data);
-    this.context = {"width": 0, "height":0 , "sum_lengths": 0};
+
     var scene = new THREE.Scene();
 
     // Create scene from dxf object (data)
@@ -96,7 +96,7 @@ export function Viewer(data, parent, width, height, font) {
     };
     for(i = 0; i < data.entities.length; i++) {
         entity = data.entities[i];
-        obj = drawEntity(entity, data, this.context);
+        obj = drawEntity(entity, data, context);
 
         if (obj) {
             var bbox = new THREE.Box3().setFromObject(obj);
@@ -124,8 +124,8 @@ export function Viewer(data, parent, width, height, font) {
     var vp_width = upperRightCorner.x - lowerLeftCorner.x;
     var vp_height = upperRightCorner.y - lowerLeftCorner.y;
     //add to context
-    this.context.width = vp_width;
-    this.context.height = vp_height;
+    context.width = vp_width;
+    context.height = vp_height;
 
     var center = center || {
         x: vp_width / 2 + lowerLeftCorner.x,
