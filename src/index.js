@@ -250,7 +250,7 @@ export function Viewer(data, parent, width, height, font, context) {
         return Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2));
     }
     function get_polyline_length(entity) {
-        sum_lengths = 0;
+        var sum_lengths = 0;
         vert = entity.vertices
         point_num = vert.length
         for (i = 0; i < point_num - 1; i++) {
