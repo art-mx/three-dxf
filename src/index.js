@@ -70,7 +70,8 @@ THREEx.BulgeGeometry = function ( startPoint, endPoint, bulge, segments ) {
 };
 
 THREEx.BulgeGeometry.prototype = Object.create( THREE.Geometry.prototype );
-    
+
+
 /**
  * Viewer class for a dxf object.
  * @param {Object} data - the dxf object
@@ -78,9 +79,10 @@ THREEx.BulgeGeometry.prototype = Object.create( THREE.Geometry.prototype );
  * @param {Number} width - width of the rendering canvas in pixels
  * @param {Number} height - height of the rendering canvas in pixels
  * @param {Object} font - a font loaded with THREE.FontLoader 
+ * @param {Object} context - an object to store the results of measurements
  * @constructor
  */
-export function Viewer(data, parent, width, height, font) {
+export function Viewer(data, parent, width, height, font, context) {
 
     createLineTypeShaders(data);
 
@@ -94,7 +96,7 @@ export function Viewer(data, parent, width, height, font) {
     };
     for(i = 0; i < data.entities.length; i++) {
         entity = data.entities[i];
-        obj = drawEntity(entity, data);
+        obj = drawEntity(entity, data, context);
 
         if (obj) {
             var bbox = new THREE.Box3().setFromObject(obj);
@@ -105,6 +107,7 @@ export function Viewer(data, parent, width, height, font) {
             if (bbox.max.y && ((dims.max.y === false) || (dims.max.y < bbox.max.y))) dims.max.y = bbox.max.y;
             if (bbox.max.z && ((dims.max.z === false) || (dims.max.z < bbox.max.z))) dims.max.z = bbox.max.z;
             scene.add(obj);
+            
         }
         obj = null;
     }
@@ -116,9 +119,14 @@ export function Viewer(data, parent, width, height, font) {
     var upperRightCorner = { x: dims.max.x, y: dims.max.y };
     var lowerLeftCorner = { x: dims.min.x, y: dims.min.y };
 
+
     // Figure out the current viewport extents
     var vp_width = upperRightCorner.x - lowerLeftCorner.x;
     var vp_height = upperRightCorner.y - lowerLeftCorner.y;
+    //add to context
+    context.width = vp_width;
+    context.height = vp_height;
+
     var center = center || {
         x: vp_width / 2 + lowerLeftCorner.x,
         y: vp_height / 2 + lowerLeftCorner.y
@@ -166,12 +174,12 @@ export function Viewer(data, parent, width, height, font) {
     //Uncomment this to disable rotation (does not make much sense with 2D drawings).
     //controls.enableRotate = false;
 
-    this.render = function() { console.log("rendering..."); renderer.render(scene, camera) };
+    this.render = function() { renderer.render(scene, camera) };
     controls.addEventListener('change', this.render);
     this.render();
     controls.update();
 
-    this.update = function() { console.log("rendering..."); renderer.render(scene, camera); controls.update();};
+    this.update = function() { renderer.render(scene, camera); controls.update();};
 
     this.resize = function(width, height) {
         var originalWidth = renderer.domElement.width;
@@ -193,12 +201,17 @@ export function Viewer(data, parent, width, height, font) {
         this.render();
     };
 
-    function drawEntity(entity, data) {
+    function objCurveLength(obj) {
+
+    }
+
+    function drawEntity(entity, data, context) {
         var mesh;
         if(entity.type === 'CIRCLE' || entity.type === 'ARC') {
-            mesh = drawArc(entity, data);
+            mesh = drawArc(entity, data, context);
         } else if(entity.type === 'LWPOLYLINE' || entity.type === 'LINE' || entity.type === 'POLYLINE') {
             mesh = drawLine(entity, data);
+            context.sum_lengths += get_polyline_length(entity)
         } else if(entity.type === 'TEXT') {
             mesh = drawText(entity, data);
         } else if(entity.type === 'SOLID') {
@@ -208,11 +221,11 @@ export function Viewer(data, parent, width, height, font) {
         } else if(entity.type === 'INSERT') {
             mesh = drawBlock(entity, data);
         } else if(entity.type === 'SPLINE') {
-            mesh = drawSpline(entity, data);
+            mesh = drawSpline(entity, data, context);
         } else if(entity.type === 'MTEXT') {
             mesh = drawMtext(entity, data);
         } else if(entity.type === 'ELLIPSE') {
-            mesh = drawEllipse(entity, data);
+            mesh = drawEllipse(entity, data, context);
         } else if(entity.type === 'DIMENSION') {
             var dimTypeEnum = entity.dimensionType & 7;
             if(dimTypeEnum === 0) {
@@ -227,7 +240,30 @@ export function Viewer(data, parent, width, height, font) {
         return mesh;
     }
 
-    function drawEllipse(entity, data) {
+    function getCurveLength(curve) {
+        var length = curve.getLength()
+        console.log(`entity ${entity.type} length = ${length}`)
+        return length;
+    }
+
+    function distance_between_points(x1, y1, x2, y2) {
+        return Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2));
+    }
+    function get_polyline_length(entity) {
+        sum_lengths = 0;
+        vert = entity.vertices
+        point_num = vert.length
+        for (i = 0; i < point_num - 1; i++) {
+            v1 = vert[i]
+            v2 = vert[i + 1]
+            sum_lengths += distance_between_points(v1.x, v1.y, v2.x, v2.y);
+
+        }
+        if (entity.shape) sum_lengths += distance_between_points(vert[point_num - 1].x, vert[point_num - 1].y, vert[0].x, vert[0].y);
+        return sum_lengths;
+    }
+
+    function drawEllipse(entity, data, context) {
         var color = getColor(entity, data);
 
         var xrad = Math.sqrt(Math.pow(entity.majorAxisEndPoint.x,2) + Math.pow(entity.majorAxisEndPoint.y,2));
@@ -241,7 +277,7 @@ export function Viewer(data, parent, width, height, font) {
             false, // Always counterclockwise
             rotation
         );
-
+        context.sum_lengths += getCurveLength(curve);
         var points = curve.getPoints( 50 );
         var geometry = new THREE.BufferGeometry().setFromPoints( points );
         var material = new THREE.LineBasicMaterial( {  linewidth: 1, color : color } );
@@ -334,7 +370,7 @@ export function Viewer(data, parent, width, height, font) {
         return text;
     }
 
-    function drawSpline(entity, data) {
+    function drawSpline(entity, data, context) {
         var color = getColor(entity, data);
 
         var points = entity.controlPoints.map(function(vec) {
@@ -361,7 +397,7 @@ export function Viewer(data, parent, width, height, font) {
             curve = new THREE.SplineCurve(points);
             interpolatedPoints = curve.getPoints( 100 );
         }
-
+        context.sum_lengths += getCurveLength(curve);
         var geometry = new THREE.BufferGeometry().setFromPoints( interpolatedPoints );
         var material = new THREE.LineBasicMaterial( { linewidth: 1, color : color } );
         var splineObject = new THREE.Line( geometry, material );
@@ -370,7 +406,7 @@ export function Viewer(data, parent, width, height, font) {
     }
 
     function drawLine(entity, data) {
-        var geometry = new THREE.Geometry(),
+        var geometry = new THREE.BufferGeometry(),
             color = getColor(entity, data),
             material, lineType, vertex, startPoint, endPoint, bulgeGeometry,
             bulge, i, line;
@@ -384,7 +420,7 @@ export function Viewer(data, parent, width, height, font) {
                 bulge = entity.vertices[i].bulge;
                 startPoint = entity.vertices[i];
                 endPoint = i + 1 < entity.vertices.length ? entity.vertices[i + 1] : geometry.vertices[0];
-
+                
                 bulgeGeometry = new THREEx.BulgeGeometry(startPoint, endPoint, bulge);
 
                 geometry.vertices.push.apply(geometry.vertices, bulgeGeometry.vertices);
@@ -395,7 +431,6 @@ export function Viewer(data, parent, width, height, font) {
 
         }
         if(entity.shape) geometry.vertices.push(geometry.vertices[0]);
-
 
         // set material
         if(entity.lineType) {
