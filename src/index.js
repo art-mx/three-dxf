@@ -406,7 +406,7 @@ export function Viewer(data, parent, width, height, font, context) {
     }
 
     function drawLine(entity, data) {
-        var geometry = new THREE.BufferGeometry(),
+        var geometry = new THREE.Geometry(),
             color = getColor(entity, data),
             material, lineType, vertex, startPoint, endPoint, bulgeGeometry,
             bulge, i, line;
