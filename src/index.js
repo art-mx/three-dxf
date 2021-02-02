@@ -82,32 +82,37 @@ THREEx.BulgeGeometry.prototype = Object.create( THREE.Geometry.prototype );
  */
 export function Viewer(data, parent, width, height, font) {
 
-    createLineTypeShaders(data);
+    this.loadScene = function(data, dims, scene) {
+        createLineTypeShaders(data);
+        scene = new THREE.Scene();
 
-    var scene = new THREE.Scene();
+        // Create scene from dxf object (data)
+        var i, entity, obj, min_x, min_y, min_z, max_x, max_y, max_z;
 
-    // Create scene from dxf object (data)
-    var i, entity, obj, min_x, min_y, min_z, max_x, max_y, max_z;
+        for(i = 0; i < data.entities.length; i++) {
+            entity = data.entities[i];
+            obj = drawEntity(entity, data);
+
+            if (obj) {
+                var bbox = new THREE.Box3().setFromObject(obj);
+                if (bbox.min.x && ((dims.min.x === false) || (dims.min.x > bbox.min.x))) dims.min.x = bbox.min.x;
+                if (bbox.min.y && ((dims.min.y === false) || (dims.min.y > bbox.min.y))) dims.min.y = bbox.min.y;
+                if (bbox.min.z && ((dims.min.z === false) || (dims.min.z > bbox.min.z))) dims.min.z = bbox.min.z;
+                if (bbox.max.x && ((dims.max.x === false) || (dims.max.x < bbox.max.x))) dims.max.x = bbox.max.x;
+                if (bbox.max.y && ((dims.max.y === false) || (dims.max.y < bbox.max.y))) dims.max.y = bbox.max.y;
+                if (bbox.max.z && ((dims.max.z === false) || (dims.max.z < bbox.max.z))) dims.max.z = bbox.max.z;
+                scene.add(obj);
+            }
+            obj = null;
+        }
+    };
+
+    var scene = {};
     var dims = {
         min: { x: false, y: false, z: false},
         max: { x: false, y: false, z: false}
     };
-    for(i = 0; i < data.entities.length; i++) {
-        entity = data.entities[i];
-        obj = drawEntity(entity, data);
-
-        if (obj) {
-            var bbox = new THREE.Box3().setFromObject(obj);
-            if (bbox.min.x && ((dims.min.x === false) || (dims.min.x > bbox.min.x))) dims.min.x = bbox.min.x;
-            if (bbox.min.y && ((dims.min.y === false) || (dims.min.y > bbox.min.y))) dims.min.y = bbox.min.y;
-            if (bbox.min.z && ((dims.min.z === false) || (dims.min.z > bbox.min.z))) dims.min.z = bbox.min.z;
-            if (bbox.max.x && ((dims.max.x === false) || (dims.max.x < bbox.max.x))) dims.max.x = bbox.max.x;
-            if (bbox.max.y && ((dims.max.y === false) || (dims.max.y < bbox.max.y))) dims.max.y = bbox.max.y;
-            if (bbox.max.z && ((dims.max.z === false) || (dims.max.z < bbox.max.z))) dims.max.z = bbox.max.z;
-            scene.add(obj);
-        }
-        obj = null;
-    }
+    this.loadScene(data, dims, scene);
 
     width = width || parent.clientWidth;
     height = height || parent.clientHeight;
@@ -167,12 +172,12 @@ export function Viewer(data, parent, width, height, font) {
     //Uncomment this to disable rotation (does not make much sense with 2D drawings).
     //controls.enableRotate = false;
 
-    this.render = function() { console.log("rendering..."); renderer.render(scene, camera) };
+    this.render = function() { renderer.render(scene, camera) };
     controls.addEventListener('change', this.render);
     this.render();
     controls.update();
 
-    this.update = function() { console.log("rendering..."); renderer.render(scene, camera); controls.update();};
+    this.update = function() { renderer.render(scene, camera); controls.update();};
 
     this.resize = function(width, height) {
         var originalWidth = renderer.domElement.width;
