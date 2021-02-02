@@ -81,8 +81,14 @@ THREEx.BulgeGeometry.prototype = Object.create( THREE.Geometry.prototype );
  * @constructor
  */
 export function Viewer(data, parent, width, height, font) {
-
-    this.loadScene = function(data, dims, scene) {
+    
+    var scene = {};
+    var dims = {
+        min: { x: false, y: false, z: false},
+        max: { x: false, y: false, z: false}
+    };
+    
+    this.loadScene = function(data) {
         createLineTypeShaders(data);
         scene = new THREE.Scene();
 
@@ -107,12 +113,8 @@ export function Viewer(data, parent, width, height, font) {
         }
     };
 
-    var scene = {};
-    var dims = {
-        min: { x: false, y: false, z: false},
-        max: { x: false, y: false, z: false}
-    };
-    this.loadScene(data, dims, scene);
+
+    this.loadScene(data);
 
     width = width || parent.clientWidth;
     height = height || parent.clientHeight;
