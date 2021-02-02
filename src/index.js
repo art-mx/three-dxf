@@ -154,7 +154,8 @@ export function Viewer(data, parent, width, height, font) {
     renderer.setSize(width, height);
     renderer.setClearColor(0xfffffff, 1);
 
-    parent.appendChild(renderer.domElement);
+    if(!parent.children[0])
+        parent.appendChild(renderer.domElement);
     parent.style.display = 'block';
 
     //TODO: Need to make this an option somehow so others can roll their own controls.
