@@ -115,7 +115,8 @@ export function Viewer(data, parent, width, height, font) {
 
 
     this.loadScene(data);
-    this.scene_size = dims;
+    this.scene_size = function(){ return dims };
+
     width = width || parent.clientWidth;
     height = height || parent.clientHeight;
     var aspectRatio = width / height;
