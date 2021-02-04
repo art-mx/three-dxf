@@ -89,6 +89,10 @@ export function Viewer(data, parent, width, height, font) {
     };
 
     this.loadScene = function(data) {
+        dims = {
+            min: { x: false, y: false, z: false},
+            max: { x: false, y: false, z: false}
+        };
         createLineTypeShaders(data);
         scene = new THREE.Scene();
 
