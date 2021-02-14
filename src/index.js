@@ -94,6 +94,7 @@ export function Viewer(data, parent, width, height, font) {
             min: { x: false, y: false, z: false},
             max: { x: false, y: false, z: false}
         };
+        scene_bbox = new THREE.Box3();
         createLineTypeShaders(data);
         scene = new THREE.Scene();
 
@@ -117,12 +118,12 @@ export function Viewer(data, parent, width, height, font) {
             }
             obj = null;
         }
-        console.log("scene_bbox size:", scene_bbox.getSize());
+        //console.log("scene_bbox size:", scene_bbox.getSize());
     };
 
 
     this.loadScene(data);
-    this.scene_size = function(){ return dims };
+    this.scene_size = function(){ return scene_bbox.getSize() };
 
     width = width || parent.clientWidth;
     height = height || parent.clientHeight;
