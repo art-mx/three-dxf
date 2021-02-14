@@ -87,7 +87,7 @@ export function Viewer(data, parent, width, height, font) {
         min: { x: false, y: false, z: false},
         max: { x: false, y: false, z: false}
     };
-    var scene_bbox = THREE.Box3();
+    var scene_bbox = new THREE.Box3();
 
     this.loadScene = function(data) {
         dims = {
