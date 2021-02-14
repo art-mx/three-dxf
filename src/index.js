@@ -87,6 +87,7 @@ export function Viewer(data, parent, width, height, font) {
         min: { x: false, y: false, z: false},
         max: { x: false, y: false, z: false}
     };
+    var scene_bbox = THREE.Box3();
 
     this.loadScene = function(data) {
         dims = {
@@ -105,6 +106,7 @@ export function Viewer(data, parent, width, height, font) {
 
             if (obj) {
                 var bbox = new THREE.Box3().setFromObject(obj);
+                scene_bbox.expandByObject(obj);
                 if (bbox.min.x && ((dims.min.x === false) || (dims.min.x > bbox.min.x))) dims.min.x = bbox.min.x;
                 if (bbox.min.y && ((dims.min.y === false) || (dims.min.y > bbox.min.y))) dims.min.y = bbox.min.y;
                 if (bbox.min.z && ((dims.min.z === false) || (dims.min.z > bbox.min.z))) dims.min.z = bbox.min.z;
@@ -115,6 +117,7 @@ export function Viewer(data, parent, width, height, font) {
             }
             obj = null;
         }
+        console.log("scene_bbox size:", scene_bbox.getSize());
     };
 
 
