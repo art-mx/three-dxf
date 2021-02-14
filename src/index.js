@@ -83,10 +83,7 @@ THREEx.BulgeGeometry.prototype = Object.create( THREE.Geometry.prototype );
 export function Viewer(data, parent, width, height, font) {
     
     var scene = {};
-    var dims = {
-        min: { x: false, y: false, z: false},
-        max: { x: false, y: false, z: false}
-    };
+    var dims = {};
     var scene_bbox = new THREE.Box3();
 
     this.loadScene = function(data) {
@@ -121,9 +118,12 @@ export function Viewer(data, parent, width, height, font) {
         //console.log("scene_bbox size:", scene_bbox.getSize());
     };
 
-
     this.loadScene(data);
-    this.scene_size = function(){ return scene_bbox.getSize() };
+    this.scene_size = function(){ 
+        var size = new THREE.Vector3();
+        scene_bbox.getSize(size);
+        return size;
+    };
 
     width = width || parent.clientWidth;
     height = height || parent.clientHeight;
